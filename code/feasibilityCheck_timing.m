@@ -22,20 +22,38 @@ n = [100,400];
 % ds = [10,50,100];
 
 ds = 10:10:200;
+ds = horzcat(ds,300:50:400);
+
+% ds = 300:100:500;
+% ds = [10,20]
 % ds = 10:10:30;
 ranks = [3,5,7,10];
+% ranks = [5,10];
+% ranks = [3];
 
 num_trials = 10;
-time_stats_log = zeros(length(ds),2,2);
+% num_trials = 1;
+time_stats_log = zeros(length(ds),length(ranks),2);
 
 for i=1:length(ds)
     for j=1:length(ranks)
-        sprintf('Dimension %i, rank %i',ds(i),ranks(j))
+        d = ds(i);
+        k = ranks(j);
+        
+        if(d < 300)
+            num_trials = 10;
+        else
+            num_trials = 1;
+            if(k > 5)
+                continue;
+            end
+        end
+        
+        sprintf('Dimension %i, rank %i',d,k)
         time_log = zeros(num_trials,2);
         results = zeros(num_trials,1);
 
-        d = ds(i);
-        k = ranks(j);
+
         U = orth(randn(d,k));
         lambda = linspace(1,4,k);
         [M,~] = hppca_problem(U,lambda,n,v);
@@ -46,6 +64,7 @@ for i=1:length(ds)
         tStart = tic;
             [proj_err,Xi_err,cvx_optval,Uhat,X,nu,Z,Y] = solve_sdp_CVX(M);
         time_log(t,1) = toc(tStart);
+        fprintf('\n Elapsed time %s',time_log(t,1));
 
         U0 = orth(randn(d,k));
         fxn = @(U) F(U,M);
@@ -65,6 +84,8 @@ for i=1:length(ds)
         time_stats_log(i,j,2,1) = median(time_log(:,2));
         time_stats_log(i,j,2,2) = std(time_log(:,2));
 %     results_log{i} = results;
+
+        save(sprintf("time_stats_log_extended_d%02d_k%02d.mat",d,k),'time_stats_log')
     end
 end
 
@@ -72,9 +93,17 @@ end
 %%
 % Load the data and plot the results
 
-load timing_results_sdp_v_certificate_extended.mat 
+% load timing_results_sdp_v_certificate_extended.mat 
+
+% ds = 10:10:200;
+% ds = 10:10:30;
+% ranks = [3,5,7,10];
 
 ds = 10:10:200;
+ds = horzcat(ds,300:50:400);
+
+% ds = 300:100:500;
+% ds = [10,20]
 % ds = 10:10:30;
 ranks = [3,5,7,10];
 
@@ -104,17 +133,29 @@ for j=1:length(ranks)
     errorbar(ds(1:end-2),time_stats_log(1:end-2,j,2,1),time_stats_log(1:end-2,j,2,2),'-^','MarkerSize',10,'Color',colors{j},'DisplayName',cert_name);
 end
 
+% for j=1:length(ranks)
+%     sdp_name = sprintf('SDP: rank %i',ranks(j));
+%     errorbar(ds,time_stats_log(:,j,1,1),time_stats_log(:,j,1,2),'-s','MarkerSize',10,'Color',colors{j},'DisplayName',sdp_name);
+% end
+% 
+% for j=1:length(ranks)
+%     cert_name = sprintf('StMM + Cert: rank %i',ranks(j));
+%     errorbar(ds,time_stats_log(:,j,2,1),time_stats_log(:,j,2,2),'-^','MarkerSize',10,'Color',colors{j},'DisplayName',cert_name);
+% end
+
+
 % legend("SDP","StMM + Global Certificate",'Location','northwest')
 leg1 = legend('show','location','eastoutside');
 set(leg1,'interpreter','latex')
 set(gca,'FontSize',20)
 set(gca, 'YScale', 'log')
+set(gca, 'XScale', 'log')
 xlabel('Data dimension')
 set(gca,'TickLabelInterpreter','latex')
 % xlim([ds(1) ds(17)])
 title('Computation time (s)')
 set(gcf,'Position',[100 100 650 400])
-xlim([10,180])
-
+% xlim([10,180])
+saveas(gcf,'feasibilityCheck_timing_larger_d_nov2023.png')
 
 
