@@ -4,7 +4,7 @@
 
 This repository contains all source code and files necessary to reproduce the experiments of 
 
-``A Semidefinite Relaxation for Sums of Heterogeneous Quadratics on the Stiefel Manifold.”
+Gilman, Kyle, Samuel Burer, and Laura Balzano. "A Semidefinite Relaxation for Sums of Heterogeneous Quadratic Forms on the Stiefel Manifold." SIAM Journal on Matrix Analysis and Applications 46.2 (2025): 1091-1116.
 
 ------------------------------------------------------------------------------------------
 
